@@ -1,6 +1,12 @@
 {
   "bins": [
-    
+    [
+      {
+        "Name": "Bin 1",
+        "start": "2",
+        "end": "3"
+      }
+    ]
   ],
   "minMax": {
     "min": 2,

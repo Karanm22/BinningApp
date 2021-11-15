@@ -37,8 +37,10 @@ const BinList = ({ bins }) => {
             <div className="col-2">{bin.end}</div>
           </div>
         ))}
+         <span className=" btn btn-primary m-2" onClick={()=>window.location.reload()}>Reload</span>
       <Link to="/">
-        <span className=" btn btn-primary">Back</span>
+        
+        <span className=" btn btn-primary m-2">Back</span>
       </Link>
     </div>
   );

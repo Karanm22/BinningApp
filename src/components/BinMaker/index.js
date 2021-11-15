@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 
+
 const BinMaker = ({ limit }) => {
   const [addBins, setAddBins] = useState([]);
+  const [idgen,setIdgen]=useState([0])
   const [error, setError] = useState({
     message: null,
     status: false,
@@ -12,12 +14,14 @@ const BinMaker = ({ limit }) => {
     status: false,
   });
   const addBin = () => {
-    const binData = {
-      Name: `Bin ` + (addBins.length + 1),
+    let id=1
+    let newBins = [...addBins];
+    let binData = {
+      Name: `Bin ` +  (idgen.length),
       start: ``,
       end: ``,
     };
-    let newBins = [...addBins];
+   
 
     if (error.status) {
       setError({
@@ -26,6 +30,7 @@ const BinMaker = ({ limit }) => {
       });
     } else {
       if (newBins.length === 0) {
+        idgen.push(id)
         newBins.push(binData);
         setAddBins(newBins);
       } else {
@@ -46,8 +51,15 @@ const BinMaker = ({ limit }) => {
                 "Maximum binnable limit reached, so you can't create more bins.",
             });
           } else {
-            newBins.push(binData);
-            setAddBins(newBins);
+            if (newBins === [] || newBins.length > 0) {
+              setError({
+                status: false,
+                message: null,
+              });
+              idgen.push(id)
+              newBins.push(binData);
+              setAddBins(newBins);
+            }
           }
         }
       }
@@ -65,14 +77,14 @@ const BinMaker = ({ limit }) => {
   const handleStartBin = (e, index) => {
     const currentBin = [...addBins];
     currentBin[index].start = e.target.value;
-    if (limit.max-1 < e.target.value) {
+    if (limit.max - 1 < e.target.value) {
       setError({
         message: "Please enter a number under Max value.",
         status: true,
       });
     } else {
       if (index === 0) {
-        if (parseInt(e.target.value) !== 2 || e.target.value < 2) {
+        if (e.target.value < 2) {
           setError({
             message: "Please Enter a number greater than 2.",
             status: true,
@@ -82,12 +94,15 @@ const BinMaker = ({ limit }) => {
           setAddBins(currentBin);
         }
       } else {
-        if (parseInt(currentBin[currentBin.length - 2].end) >= e.target.value || currentBin[currentBin.length - 2].start === e.target.value) {
+        if (
+          parseInt(currentBin[currentBin.length - 2].end) >= e.target.value ||
+          currentBin[currentBin.length - 2].start === e.target.value
+        ) {
           setError({
             message: "Please Enter a number greater than the last ending bin.",
             status: true,
           });
-        }  else {
+        } else {
           setAddBins(currentBin);
           setError({ message: null, status: false });
         }
@@ -106,7 +121,7 @@ const BinMaker = ({ limit }) => {
             status: true,
           });
         } else {
-          parseInt(currentBin[currentBin.length - 1].start) === 2
+          parseInt(currentBin[currentBin.length - 1].start) >= 2
             ? setError({ message: null, status: false })
             : setError({
                 message: "Please enter a valid number in start bin to proceed.",
@@ -120,29 +135,33 @@ const BinMaker = ({ limit }) => {
           status: true,
         });
       }
-    } else if (e.target.value > parseInt(currentBin[index].start)) {
+    } 
+    else if (e.target.value > parseInt(currentBin[index].start)) {
       if (limit.max < e.target.value) {
         setError({
           message: "Please enter a number under Max value.",
           status: true,
         });
-      } 
-      else {
-        parseInt(currentBin[currentBin.length - 1].start) !==
-        parseInt(currentBin[currentBin.length - 2].end)
-          ? setError({ message: null, status: false })
-          : setError({
-              message: "Please enter a valid number in start bin to proceed.",
-              status: true,
-            });
+      } else {
+        parseInt(currentBin[currentBin.length - 1].start) ===
+        parseInt(currentBin[currentBin.length - 2].end) || parseInt(currentBin[currentBin.length - 2].end) === parseInt(currentBin[currentBin.length - 1].end) ||
+        parseInt(currentBin[currentBin.length - 2].start) === parseInt(currentBin[currentBin.length - 1].start)
+          ? setError({
+            message: "Please enter a valid number in start bin to proceed.",
+            status: true,
+          })
+          : 
+            setError({ message: null, status: false })
       }
-    } else if (e.target.value === parseInt(addBins[addBins.length - 1].end)) {
+    }
+   else if (e.target.value === parseInt(addBins[addBins.length - 2].end) ||e.target.value === parseInt(addBins[addBins.length - 1].start) ) {
       setError({
         message:
           "Please enter a number in a greater range than the start number.",
         status: true,
       });
-    } else {
+    } 
+    else {
       setError({
         message:
           "Please enter a number in a greater range than the start number.",
@@ -173,6 +192,7 @@ const BinMaker = ({ limit }) => {
           body: JSON.stringify(addBins),
         })
           .then((res) => {
+            handleCancel()
             setStatus({
               message: "Success!",
               status: true,
@@ -188,9 +208,8 @@ const BinMaker = ({ limit }) => {
           })
           .catch((error) => {
             setError({
-              status:true,
-              message:
-                "Failed!",
+              status: true,
+              message: "Failed!",
             });
           });
       }
@@ -199,6 +218,7 @@ const BinMaker = ({ limit }) => {
 
   const handleCancel = () => {
     setAddBins([]);
+    setIdgen([0])
     setError({
       status: false,
       message: null,
